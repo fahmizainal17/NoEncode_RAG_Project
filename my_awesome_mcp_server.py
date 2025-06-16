@@ -28,7 +28,8 @@ def knowledge_tool(query: str) -> list[str]:
             "It defines how an LLM can call out to “tools” (e.g. knowledge stores) "
             "and receive structured responses."
         ]
-    return [f"Echo: {query}"]
+    # Fallback for any other query
+    return ["Error: Unsupported query. Only 'what is mcp' is currently handled."]
 
 # 3) Run the server loop (handles JSON-RPC, TaskGroups, etc.)
 if __name__ == "__main__":
