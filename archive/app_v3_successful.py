@@ -13,18 +13,15 @@ import logging
 try:
     import google.generativeai as genai
 except ImportError:
-    st.error("`google.generativeai` module not found. Run `pip install google-generativeai`")
+    st.error("`google.generativeai` module not found. Run `pip install google-generativeai` in your environment.")
     raise
 
-# Load Gemini API key from Streamlit secrets
-gemini_key = st.secrets.get("GEMINI_API_KEY", "")
-if not gemini_key:
+# Load Gemini API key from Streamlit secrets and configure
+os.environ["GEMINI_API_KEY"] = st.secrets.get("GEMINI_API_KEY", "")
+if not os.environ["GEMINI_API_KEY"]:
     st.error("GEMINI_API_KEY missing in secrets.toml.")
     st.stop()
-
-# Configure Gemini
-os.environ["GEMINI_API_KEY"] = gemini_key
-genai.configure(api_key=gemini_key)
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 gemini_model = genai.GenerativeModel("gemini-2.0-flash")
 
 """
@@ -37,7 +34,7 @@ Requirements:
 - streamlit
 - nest_asyncio
 - mcp[cli]
-- fed-rag
+- fed-rag[huggingface]
 - google-generativeai
 - torch
 """
@@ -46,28 +43,24 @@ from fed_rag.knowledge_stores.no_encode import MCPKnowledgeStore, MCPStdioKnowle
 from fed_rag.data_structures import KnowledgeNode
 from mcp import StdioServerParameters
 
-# Logging config
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def main():
     st.title("NoEncode RAG + Gemini 2.0 Flash Demo")
-
-    # Sidebar description and requirements
-    st.sidebar.title("NoEncode RAG + Gemini 2.0 Flash Demo")
-    st.sidebar.markdown(
-        "This Streamlit app configures an MCP stdio server, performs NoEncode retrieval,"
-        " then uses Google Gemini 2.0 Flash to generate the final answer.\n\n"
-        "**Requirements:**\n"
-        "- streamlit\n"
-        "- nest_asyncio\n"
-        "- mcp[cli]\n"
-        "- fed-rag\n"
-        "- google-generativeai\n"
-        "- torch"
+    st.markdown(
+        "Configure your MCP server, ask a question, and click **Retrieve** to perform NoEncode retrieval"
+        " and generate an answer with Gemini 2.0 Flash."
     )
 
-    # Sidebar log area
+    # Sidebar for MCP config and logs
+    st.sidebar.header("MCP Server Config")
+    command    = st.sidebar.text_input("Command",                value="python3")
+    args_str   = st.sidebar.text_input("Args (comma-separated)", value="my_awesome_mcp_server.py")
+    tool_name  = st.sidebar.text_input("Tool Name",              value="KnowledgeTool")
+    query_param= st.sidebar.text_input("Query Param Name",       value="query")
+
     log_container = st.sidebar.empty()
     log_msgs: list[str] = []
     def log(msg: str):
@@ -75,25 +68,23 @@ def main():
         log_container.text("\n".join(log_msgs))
         logger.info(msg)
 
-    # Main input for user question
+    # Main input
     query_text = st.text_input("Enter your question:", value="What is MCP?")
 
     if st.button("Retrieve"):
-        # Fixed MCP server parameters
-        command = "python3"
-        args = ["my_awesome_mcp_server.py"]
-        tool_name = "KnowledgeTool"
-        query_param = "query"
+        args = [a.strip() for a in args_str.split(',') if a.strip()]
 
         async def pipeline():
-            log("📦 Setting up MCP parameters...")
+            log("📦 Preparing MCP parameters...")
             params = StdioServerParameters(command=command, args=args)
             log(f"⚙️ Command: {command} {' '.join(args)}")
 
             log("🔧 Creating MCPStdioKnowledgeSource...")
             source = MCPStdioKnowledgeSource(
-                name="mcp", server_params=params,
-                tool_name=tool_name, query_param_name=query_param
+                name="mcp",
+                server_params=params,
+                tool_name=tool_name,
+                query_param_name=query_param,
             )
 
             log("📚 Building knowledge store...")
@@ -102,7 +93,7 @@ def main():
             log("⏳ Retrieving contexts...")
             nodes = await store.retrieve(query_text)
 
-            # Combine context texts
+            # Assemble context text
             contexts = "\n---\n".join(
                 (item[1].text_content if isinstance(item, tuple) else item.text_content)
                 for item in nodes

@@ -5,3 +5,5 @@ fastapi
 uvicorn
 mcp[cli]
 fed-rag[huggingface]
+google-generativeai
+nest_asyncio
