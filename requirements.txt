@@ -7,3 +7,4 @@ mcp[cli]
 fed-rag[huggingface]
 google-generativeai
 nest_asyncio
+mcp
