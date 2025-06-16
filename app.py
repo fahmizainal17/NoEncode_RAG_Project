@@ -1,3 +1,18 @@
+"""
+NoEncode RAG with MCP + Gemini 2.0 Flash Demo
+
+This Streamlit app configures an MCP stdio server, performs NoEncode retrieval,
+then uses Google Gemini 2.0 Flash to generate the final answer.
+
+Requirements:
+- streamlit
+- nest_asyncio
+- mcp[cli]
+- fed-rag[huggingface]
+- google-generativeai
+- torch
+"""
+
 import os
 # Disable Streamlit’s file watcher to avoid torch errors
 os.environ["STREAMLIT_SERVER_FILEWATCHER_TYPE"] = "none"
@@ -27,21 +42,6 @@ os.environ["GEMINI_API_KEY"] = gemini_key
 genai.configure(api_key=gemini_key)
 gemini_model = genai.GenerativeModel("gemini-2.0-flash")
 
-"""
-NoEncode RAG with MCP + Gemini 2.0 Flash Demo
-
-This Streamlit app configures an MCP stdio server, performs NoEncode retrieval,
-then uses Google Gemini 2.0 Flash to generate the final answer.
-
-Requirements:
-- streamlit
-- nest_asyncio
-- mcp[cli]
-- fed-rag
-- google-generativeai
-- torch
-"""
-
 from fed_rag.knowledge_stores.no_encode import MCPKnowledgeStore, MCPStdioKnowledgeSource
 from fed_rag.data_structures import KnowledgeNode
 from mcp import StdioServerParameters
@@ -62,7 +62,7 @@ def main():
         "- streamlit\n"
         "- nest_asyncio\n"
         "- mcp[cli]\n"
-        "- fed-rag\n"
+        "- fed-rag[huggingface]\n"
         "- google-generativeai\n"
         "- torch"
     )
