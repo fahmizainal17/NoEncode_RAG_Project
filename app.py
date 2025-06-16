@@ -9,7 +9,7 @@ NoEncode RAG with MCP — A new FedRAG core abstraction
 
 This Streamlit demo app shows how to configure an MCP stdio server, perform natural language queries
 against a NoEncode knowledge store, includes fixes for asyncio event loop handling and file watcher,
-and now provides a loading spinner and logging so you can see progress.
+provides a loading spinner and logging, and now handles tuple‐wrapped nodes when needed.
 """
 
 import streamlit as st
@@ -39,7 +39,7 @@ def main():
     tool_name = st.sidebar.text_input("Tool Name", value="KnowledgeTool")
     query_param = st.sidebar.text_input("Query Param Name", value="query")
 
-    # Sidebar: Logs area (initially empty)
+    # Sidebar: Logs area
     log_container = st.sidebar.empty()
     log_lines: list[str] = []
 
@@ -53,7 +53,7 @@ def main():
     query_text = st.text_input("Natural Language Query", value="What is MCP?")
 
     if st.button("Retrieve"):
-        args = [arg.strip() for arg in args_str.split(",")]
+        args = [arg.strip() for arg in args_str.split(",") if arg.strip()]
 
         async def retrieve_nodes():
             log("📦 Setting up StdioServerParameters")
@@ -72,21 +72,30 @@ def main():
             return await knowledge_store.retrieve(query_text)
 
         try:
-            # Show spinner while the async call runs
             with st.spinner("Retrieving knowledge nodes…"):
                 loop = asyncio.get_event_loop()
-                nodes: list[KnowledgeNode] = loop.run_until_complete(retrieve_nodes())
+                raw_nodes = loop.run_until_complete(retrieve_nodes())
 
-            log(f"✅ Retrieved {len(nodes)} node(s)")
-            if nodes:
-                for i, node in enumerate(nodes, start=1):
+            count = len(raw_nodes)
+            log(f"✅ Retrieved {count} node(s)")
+
+            if count:
+                for i, item in enumerate(raw_nodes, start=1):
+                    # handle tuple-wrapped nodes (score, KnowledgeNode)
+                    if isinstance(item, tuple) and len(item) == 2 and isinstance(item[1], KnowledgeNode):
+                        score, node = item
+                    else:
+                        node = item  # assume it's a KnowledgeNode
+                        score = getattr(node, "score", "N/A")
+
                     st.subheader(f"Node {i}")
-                    st.write(f"**Score:** {getattr(node, 'score', 'N/A')}")
+                    st.write(f"**Score:** {score}")
                     st.write(f"**Source:** {node.metadata.get('name', 'unknown')}")
                     st.write(node.text_content)
             else:
                 log("ℹ️ No nodes returned for that query.")
                 st.info("No nodes were retrieved for that query.")
+
         except Exception as e:
             log(f"❌ Error: {e}")
             st.error(f"An error occurred: {e}")

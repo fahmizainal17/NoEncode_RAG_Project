@@ -3,3 +3,6 @@ fed-rag
 mcp
 sentence-transformers
 torch
+fastapi
+uvicorn
+mcp[cli]
