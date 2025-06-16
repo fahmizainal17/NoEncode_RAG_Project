@@ -68,7 +68,7 @@ def main():
 
         if st.button("Retrieve", key="run_demo"):
             # Fixed MCP server parameters
-            command = "python3"
+            command = "python" # python3 kalau run locally
             args = ["my_awesome_mcp_server.py"]
             tool_name = "KnowledgeTool"
             query_param = "query"
