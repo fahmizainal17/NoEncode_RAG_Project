@@ -21,6 +21,9 @@
 
 This project demonstrates **NoEncode Retrieval-Augmented Generation (RAG)** powered by Anthropic’s Model Context Protocol (MCP) and Google Gemini 2.0 Flash. Unlike traditional RAG, NoEncode retrieves natural-language context directly—no embedding or retriever model required—then generates answers using an LLM.
 
+# Overview Photo
+![alt text](assets/retrieve_answer.png)
+
 ```mermaid
 flowchart TD
     User --> Streamlit[Streamlit App]
