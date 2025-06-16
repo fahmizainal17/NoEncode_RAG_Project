@@ -1,0 +1,5 @@
+streamlit
+fed-rag
+mcp
+sentence-transformers
+torch
