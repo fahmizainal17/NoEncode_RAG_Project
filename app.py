@@ -128,12 +128,14 @@ def main():
     with explain_tab:
         st.header("How NoEncode RAG Works")
         st.markdown(
-            "### Workflow Overview\n"
-            "1. **MCP Stdio Server**: A FastMCP server listens on stdin/stdout and registers tools you define.\n"
-            "2. **MCPKnowledgeSource**: FedRAG creates a client to send natural-language queries to your MCP server and receives plain-text results.\n"
-            "3. **NoEncodeKnowledgeStore**: Abstracts one or more MCP sources so you don’t need embeddings or retrievers; retrieval works on natural queries.\n"
-            "4. **Generator LLM**: Passes retrieved contexts plus the query to an LLM (Gemini 2.0 Flash) for final answer generation.\n\n"
-            "**Demo Limitation:** The provided `my_awesome_mcp_server.py` only handles the `what is mcp` query and returns a fixed definition. You can only ask this specific question unless you extend the server logic.
+            """
+### Workflow Overview
+1. **MCP Stdio Server**: A FastMCP server listens on stdin/stdout and registers tools you define.
+2. **MCPKnowledgeSource**: FedRAG creates a client to send natural-language queries to your MCP server and receives plain-text results.
+3. **NoEncodeKnowledgeStore**: Abstracts one or more MCP sources so you don’t need embeddings or retrievers; retrieval works on natural queries.
+4. **Generator LLM**: Passes retrieved contexts plus the query to an LLM (Gemini 2.0 Flash) for final answer generation.
+
+**Demo Limitation:** The provided `my_awesome_mcp_server.py` only handles the `what is mcp` query and returns a fixed definition. You can only ask this specific question unless you extend the server logic.
 
 **Dummy Server Example (only supports `what is mcp`):**
 ```python
@@ -150,33 +152,37 @@ def knowledge_tool(query: str) -> list[str]:
             "for invoking external tools via JSON-RPC over stdin/stdout or HTTP. "
             "It defines how an LLM can call out to \"tools\" and receive structured responses."
         ]
-    # For any other query, return an empty or error message
+    # For any other query, return an error
     return ["Error: Unsupported query. Only 'what is mcp' is currently handled."]
 ```
 
-### Server Example\n"
-            "FedRAG’s NoEncode source can be any tool or API you wrap as an MCP tool. Examples include:\n"
-            "- **SQL/NoSQL Database**: Query records directly (e.g., PostgreSQL, MongoDB).\n"
-            "- **REST/GraphQL API**: Fetch live data (e.g., weather, finance, internal services).\n"
-            "- **Document Store**: Search S3 or Google Drive documents.\n"
-            "- **Knowledge Graph**: Run SPARQL against RDF or Cypher on Neo4j.\n"
-            "- **Search Engine**: Wrap Elasticsearch or Algolia.\n"
-            "- **Custom Python Function**: Integrate any SDK (Salesforce, HubSpot, etc.).\n\n"
-            "```python\n"
-            "# Example: Database-backed MCP server\n"
-            "from mcp.server.fastmcp import FastMCP\n"
-            "import psycopg2\n\n"
-            "mcp = FastMCP('DatabaseServer')\n\n"
-            "@mcp.tool(name='CustomerLookup')\n"
-            "def customer_lookup(query: str) -> list[str]:\n"
-            "    conn = psycopg2.connect(\"dbname=crm user=admin\")\n"
-            "    cur = conn.cursor()\n"
-            "    cur.execute(\"SELECT notes FROM customers WHERE id = %s\", (query,))\n"
-            "    return [row[0] for row in cur.fetchall()]\n\n"
-            "if __name__ == '__main__':\n"
-            "    mcp.run()\n"
-            "```\n"
-            "Use this pattern to connect **any** external system as a NoEncode knowledge source."
+### Server Example
+
+FedRAG’s NoEncode source can be any tool or API you wrap as an MCP tool. Examples include:
+- **SQL/NoSQL Database**: Query records directly (e.g., PostgreSQL, MongoDB).
+- **REST/GraphQL API**: Fetch live data (e.g., weather, finance, internal services).
+- **Document Store**: Search S3 or Google Drive documents.
+- **Knowledge Graph**: Run SPARQL against RDF or Cypher on Neo4j.
+- **Search Engine**: Wrap Elasticsearch or Algolia.
+- **Custom Python Function**: Integrate any SDK (Salesforce, HubSpot, etc.).
+
+```python
+# Example: Database-backed MCP server
+from mcp.server.fastmcp import FastMCP
+import psycopg2
+
+mcp = FastMCP('DatabaseServer')
+
+@mcp.tool(name='CustomerLookup')
+def customer_lookup(query: str) -> list[str]:
+    conn = psycopg2.connect("dbname=crm user=admin")
+    cur = conn.cursor()
+    cur.execute("SELECT notes FROM customers WHERE id = %s", (query,))
+    return [row[0] for row in cur.fetchall()]
+
+if __name__ == '__main__':
+    mcp.run()
+```"""
         )
 
 if __name__ == '__main__':
