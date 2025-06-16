@@ -24,6 +24,7 @@ This project demonstrates **NoEncode Retrieval-Augmented Generation (RAG)** powe
 ### Demo Example
 ![alt text](assets/retrieve_answer.png)
 
+### Workflow
 ```mermaid
 flowchart TD
     User --> Streamlit[Streamlit App]
