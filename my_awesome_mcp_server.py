@@ -4,10 +4,10 @@ import sys, json
 def main():
     for line in sys.stdin:
         req = json.loads(line)
-        query = req["params"].get("query","")
-        # pretend we always return one node whose text is "Echo: {query}"
-        result = {"result": [f"Echo: {query}"]}
-        sys.stdout.write(json.dumps(result) + "\n")
+        q = req["params"].get("query","")
+        # wrap the query in a fake result
+        resp = {"result": [f"Echo from MCP: {q}"]}
+        sys.stdout.write(json.dumps(resp) + "\n")
         sys.stdout.flush()
 
 if __name__ == "__main__":

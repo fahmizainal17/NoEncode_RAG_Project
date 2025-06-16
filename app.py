@@ -34,7 +34,7 @@ def main():
 
     # Sidebar: MCP server inputs
     st.sidebar.header("MCP Server Configuration")
-    command = st.sidebar.text_input("Command", value="python")
+    command = st.sidebar.text_input("Command", value="python3")
     args_str = st.sidebar.text_input("Args (comma-separated)", value="my_awesome_mcp_server.py")
     tool_name = st.sidebar.text_input("Tool Name", value="KnowledgeTool")
     query_param = st.sidebar.text_input("Query Param Name", value="query")
